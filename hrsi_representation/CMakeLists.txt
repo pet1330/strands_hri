@@ -27,6 +27,8 @@ add_message_files(
   FILES
   QTC.msg
   QTCArray.msg
+  QTCMultiple.msg
+  QTCMultipleArray.msg
 )
 
 generate_dynamic_reconfigure_options(

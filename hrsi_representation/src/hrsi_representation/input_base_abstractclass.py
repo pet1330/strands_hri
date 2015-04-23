@@ -52,24 +52,27 @@ class InputBaseAbstractclass(object):
     def _request_qtc(self, qsr, world, include_missing_data=True, qsrs_for=[]):
         """reads all .qtc files from a given directory and resturns them as numpy arrays"""
 
-        qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data, qsrs_for=qsrs_for)
+        qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data)
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
-        rospy.logdebug("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
+        rospy.loginfo("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
         ret = np.array([])
+        ob = []
         for t in out.qsrs.get_sorted_timestamps():
             foo = str(t) + ": "
             for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
-                foo += str(k) + ":" + str(v.qsr) + "; "
+                if not k in ob: ob.append(k)                
+                foo += str(k) + ":" + str(v.qsr) + "; \n"
                 q = self._to_np_array(v.qsr)
                 if qsr == self.qtc_types["qtcbc"]:
                     q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+                    print q
                 ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
-            rospy.logdebug(foo)
+            rospy.loginfo(foo)
 
-        return ret
+        return ret, ob
 
     def _convert_to_world(self, data_dict, quantisation_factor=0, validate=True, no_collapse=False, distance_threshold=np.Inf):
         world = World_Trace()
