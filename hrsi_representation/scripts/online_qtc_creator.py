@@ -33,7 +33,7 @@ class OnlineQTCCreator(object):
         self.input        = OnlineInput()
         ppl_topic         = rospy.get_param("~ppl_topic", "/people_tracker/positions")
         robot_topic       = rospy.get_param("~robot_topic", "/robot_pose")
-        self.target_frame = rospy.get_param("~target_frame", "/map")
+        self.target_frame = rospy.get_param("~target_frame", "/base")
         self.dyn_srv      = DynServer(OnlineQTCCreatorConfig, self.dyn_callback)
         self.listener     = tf.TransformListener()
         self.pub          = rospy.Publisher("~qtc_array", QTCArray, queue_size=10)
