@@ -23,7 +23,11 @@ class OnlineQTCCreator(object):
     _qtc_types = {
         0: "qtcb",
         1: "qtcc",
-        2: "qtcbc"
+        2: "qtcbc",
+        3: "rcc3",
+        4: "rcc8",
+        5: "cone_direction",
+        6: "distance"
     }
     _robot_pose = None
     _buffer = dict()
@@ -75,9 +79,11 @@ class OnlineQTCCreator(object):
             except (tf.Exception, tf.LookupException, tf.ConnectivityException) as ex:
                 rospy.logwarn(ex)
                 return
-
+            print("!0!")
             if self._robot_pose:
+                print("!1!")
                 if not uuid in self._buffer.keys():
+                    print("!2!")
                     self._buffer[uuid] = {"data": np.array(
                         [
                             self._robot_pose.position.x,
@@ -87,6 +93,7 @@ class OnlineQTCCreator(object):
                         ]
                     ).reshape(-1,4), "last_seen": msg.header.stamp.to_sec()}
                 else:
+                    print("!3!")
                     self._buffer[uuid]["data"] = np.append(
                         self._buffer[uuid]["data"],
                         [
@@ -97,10 +104,12 @@ class OnlineQTCCreator(object):
                         ]
                     ).reshape(-1,4)
                     if self._buffer[uuid]["data"].shape[0] > 3:
+                        print("!4!")
                         self._buffer[uuid]["data"] = self._buffer[uuid]["data"][:-1] if np.allclose(self._buffer[uuid]["data"][-1], self._buffer[uuid]["data"][-3]) else self._buffer[uuid]["data"]
                 self._buffer[uuid]["last_seen"] = msg.header.stamp.to_sec()
-
+                print("!5!")
                 if self._buffer[uuid]["data"].shape[0] > 2:
+                    print("!6!")
                     qtc = self.input.convert(
                         data=self.input.generate_data_from_input(
                             agent1="Robot",
@@ -130,7 +139,7 @@ class OnlineQTCCreator(object):
                     qtc_msg.qtc_serialised      = json.dumps(qtc.tolist())
 
                     out.qtc.append(qtc_msg)
-
+            print("after zero")
         self.pub.publish(out)
         self.decay()
         rospy.sleep(self.smoothing_rate)

@@ -33,8 +33,14 @@ class InputBaseAbstractclass(object):
         self.qtc_types = {
             "qtcb": "qtc_b_simplified",
             "qtcc": "qtc_c_simplified",
-            "qtcbc": "qtc_bc_simplified"
+            "qtcbc": "qtc_bc_simplified",
+            "cone_direction": "cone_direction_bounding_boxes_centroid_2d",
+            "rcc3": "rcc3_rectangle_bounding_boxes_2d",
+            "rcc8": "rcc8_rectangle_bounding_boxes_2d",
+            "cone_direction": "cone_direction_bounding_boxes_centroid_2d",
+            "distance": "arg_relations_distance"
         }
+
         self.template = {
             "agent1": {
                 "name": "",
@@ -50,7 +56,7 @@ class InputBaseAbstractclass(object):
         self.qtc = None
 
     def _request_qtc(self, qsr, world, include_missing_data=True, qsrs_for=[]):
-        """reads all .qtc files from a given directory and resturns them as numpy arrays"""
+        """reads all .qtc files from a given directory and returns them as numpy arrays"""
 
         qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data, qsrs_for=qsrs_for)
         cln = QSRlib_ROS_Client()
@@ -63,7 +69,7 @@ class InputBaseAbstractclass(object):
             foo = str(t) + ": "
             for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
                 foo += str(k) + ":" + str(v.qsr) + "; "
-                q = self._to_np_array(v.qsr)
+                q = self._to_np_array(v.qsr,qsr)
                 if qsr == self.qtc_types["qtcbc"]:
                     q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
                 ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
@@ -93,6 +99,8 @@ class InputBaseAbstractclass(object):
                 timestamp=idx,
                 x=e_x1,
                 y=e_y1,
+                width=0.1,
+                length=0.1,                
                 quantisation_factor=quantisation_factor,
                 validate=validate,
                 no_collapse=no_collapse,
@@ -103,6 +111,8 @@ class InputBaseAbstractclass(object):
                 timestamp=idx,
                 x=e_x2,
                 y=e_y2,
+                width=0.1,
+                length=0.1,
                 quantisation_factor=quantisation_factor,
                 validate=validate,
                 no_collapse=no_collapse,
@@ -141,5 +151,11 @@ class InputBaseAbstractclass(object):
             ret.append(self._request_qtc(qsr=qsr, world=world, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
         return ret
 
-    def _to_np_array(self, string):
-        return np.fromstring(string.replace('-','-1').replace('+','+1'), dtype=int, sep=',')
+    def _to_np_array(self, string, qsr_type):
+
+        if qsr_type != "rcc3_rectangle_bounding_boxes_2d":
+            print string
+            return string
+        else:
+            print string
+            return np.fromstring(string.replace('-','-1').replace('+','+1'), dtype=int, sep=',')

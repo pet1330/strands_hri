@@ -23,7 +23,11 @@ class OnlineQTCCreator(object):
     _qtc_types = {
         0: "qtcb",
         1: "qtcc",
-        2: "qtcbc"
+        2: "qtcbc",
+        3: "rcc3",
+        4: "rcc8",
+        5: "cone_direction",
+        6: "distance"
     }
     _robot_pose = None
     _buffer = dict()
